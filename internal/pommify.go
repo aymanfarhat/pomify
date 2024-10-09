@@ -96,14 +96,10 @@ func ScanJars(c *cli.Context) error {
 	return nil
 }
 
-func GenDepXml(c *cli.Context) error {
-	reportPath := c.String("report")
-	outputPath := c.String("output")
-
+func loadReportFile(reportPath string) ([]ReportRow, error) {
 	reportFile, err := os.Open(reportPath)
 	if err != nil {
-		fmt.Printf("Error opening report file: %s\n", err)
-		return err
+		return nil, fmt.Errorf("error opening report file: %s", err)
 	}
 
 	defer reportFile.Close()
@@ -111,7 +107,19 @@ func GenDepXml(c *cli.Context) error {
 	report := make([]ReportRow, 0)
 
 	if err := gocsv.UnmarshalFile(reportFile, &report); err != nil {
-		fmt.Printf("Error reading report file: %s\n", err)
+		return nil, fmt.Errorf("error reading report file: %s", err)
+	}
+
+	return report, nil
+}
+
+func GenDepXml(c *cli.Context) error {
+	reportPath := c.String("report")
+	outputPath := c.String("output")
+
+	report, err := loadReportFile(reportPath)
+	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -150,6 +158,35 @@ func GenDepXml(c *cli.Context) error {
 }
 
 func PushJars(c *cli.Context) error {
-	fmt.Println("Pushing jars to Maven repository")
+	reportPath := c.String("report")
+	mvnRepo := c.String("mvn_repo")
+	report, err := loadReportFile(reportPath)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	importCommands := []string{}
+
+	for _, row := range report {
+		if !row.OnMavenCentral {
+			importCommand := fmt.Sprintf(
+                `mvn deploy:deploy-file \
+                    -Dfile="%s" \
+                    -DgroupId="%s" \
+                    -DartifactId="%s" \
+                    -Dversion="%s" \
+                    -Dpackaging="jar" \
+                    -DgeneratePom=true \
+                    -Durl="%s" \
+                    -DcreateChecksum=true`, row.LocalFilepath, row.GroupId, row.ArtifactId, row.Version, mvnRepo)
+
+            importCommands = append(importCommands, importCommand)
+		}
+	}
+
+	writeStringsToFile(importCommands, "output/import-commands.sh")
+
 	return nil
 }
