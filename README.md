@@ -15,13 +15,6 @@ A simple CLI tool for classifying, organizing and managing jar dependencies into
 ### Scan
 Scan a directory of jar files and output a CSV report
 
-USAGE:
-   pomify scan [command options]
-
-OPTIONS:
-   --jars value, -j value    Path to the directory containing the jar files
-   --output value, -o value  Path to the output CSV file
-
 ```bash
 pomify scan --jars /path/to/jars --output /path/to/output.csv
 ```
@@ -30,14 +23,16 @@ pomify scan --jars /path/to/jars --output /path/to/output.csv
 
 Generate a pom.xml dependencies block from a CSV report for each jar category
 
-USAGE:
-   pomify generate [command options]
-
-OPTIONS:
-   --report value, -r value  Path to the Pomify CSV report file
-   --output value, -o value  Path to the output directory of XML files
-
 ```bash
 pomify generate --report /path/to/output.csv --output /path/to/output
+```
+
+
+### Push
+
+Generate an mvn import command to migrate jar files into a custom Maven repository
+
+```bash
+pomi push --report /path/to/output.csv --mvn_repo http://localhost:8081/repository/maven-releases
 ```
 
