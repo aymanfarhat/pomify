@@ -61,3 +61,4 @@ Generate an mvn import command to migrate jar files into a custom Maven reposito
 pomify push --report /path/to/output.csv --mvn_repo http://localhost:8081/repository/maven-releases
 ```
 
+**Note** Subsequent runs of pomify scan, generate, and push will overwrite the output files if they already exist. If you want to keep the output files, rename them before running the command again.
