@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/gocarina/gocsv"
 	"github.com/urfave/cli/v2"
 )
@@ -42,17 +43,15 @@ func ScanJars(c *cli.Context) error {
 		checksum, err := getFileSha1Checksum(jar)
 		if err != nil {
 			fmt.Printf("Error calculating checksum for %s: %s\n", jar, err)
-			continue
 		}
 
 		dep, err := searchMaven(checksum)
 		if err != nil {
 			fmt.Printf("Error searching Maven Central for %s: %s\n", jar, err)
-			continue
 		}
 
 		if dep != nil {
-			fmt.Printf("\u2713 Found %s on Maven central\n", jar)
+			color.Green("Found %s on Maven central", jar)
 			report = append(report, ReportRow{
 				JarFilename:    jarFilename,
 				GroupId:        dep.GroupId,
@@ -64,17 +63,30 @@ func ScanJars(c *cli.Context) error {
 			})
 		} else {
 			// For now, just add the jar to the report with default values
-			// TODO: Drill down into the jar metadata to get more accurate values
-			fmt.Printf("\u2715 Couldn't find %s on Maven cental\n", jar)
-			report = append(report, ReportRow{
-				JarFilename:    jarFilename,
-				GroupId: jarFilename,
-				ArtifactId: jarFilename,
-				Version: "1.0.0",
-				OnMavenCentral: false,
-				FileChecksum:   checksum,
-				LocalFilepath: jar,
-			})
+			color.Red("Couldn't find %s on Maven central, generating values...", jar)
+			dep, err := jarDependencyFromManifest(jar, "META-INF/MANIFEST.MF", jarFilename)
+			if err != nil {
+				fmt.Printf("Error generating dependency for %s: %s\n", jar, err)
+				report = append(report, ReportRow{
+					JarFilename:    jarFilename,
+					GroupId:        jarFilename,
+					ArtifactId:     jarFilename,
+					Version:        "1.0.0",
+					OnMavenCentral: false,
+					FileChecksum:   checksum,
+					LocalFilepath: jar,
+				})
+			} else {
+				report = append(report, ReportRow{
+					JarFilename:    jarFilename,
+					GroupId:        dep.GroupId,
+					ArtifactId:     dep.ArtifactId,
+					Version:        dep.Version,
+					OnMavenCentral: false,
+					FileChecksum:   checksum,
+					LocalFilepath: jar,
+				})
+			}
 		}
 	}
 

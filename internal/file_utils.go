@@ -32,13 +32,13 @@ import (
 func getFileSha1Checksum(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", fmt.Errorf("Error opening file: %s", err)
+		return "", fmt.Errorf("error opening file: %s", err)
 	}
 	defer file.Close()
 
 	hash := sha1.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		return "", fmt.Errorf("Error copying file to hash: %s", err)
+		return "", fmt.Errorf("error copying file to hash: %s", err)
 	}
 
 	hashInBytes := hash.Sum(nil)
