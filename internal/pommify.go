@@ -19,6 +19,7 @@ package internal
 import (
 	"fmt"
 	"os"
+	"text/template"
 
 	"github.com/fatih/color"
 	"github.com/gocarina/gocsv"
@@ -179,26 +180,61 @@ func PushJars(c *cli.Context) error {
 		return err
 	}
 
-	importCommands := []string{}
+	// Define a template for the bash script with a loop
+	bashScriptTemplate := `#!/bin/bash
 
-	for _, row := range report {
-		if !row.OnMavenCentral {
-			importCommand := fmt.Sprintf(
-                `mvn deploy:deploy-file \
-                    -Dfile="%s" \
-                    -DgroupId="%s" \
-                    -DartifactId="%s" \
-                    -Dversion="%s" \
-                    -Dpackaging="jar" \
-                    -DgeneratePom=true \
-                    -Durl="%s" \
-                    -DcreateChecksum=true`, row.LocalFilepath, row.GroupId, row.ArtifactId, row.Version, mvnRepo)
+mvn_repo="{{.MvnRepo}}"
 
-            importCommands = append(importCommands, importCommand)
-		}
+# Array to hold JAR details
+jars=(
+{{- range .Report}}
+  "{{.LocalFilepath}} {{.GroupId}} {{.ArtifactId}} {{.Version}}"
+{{- end}}
+)
+
+# Loop through the array and execute Maven deploy command
+for jar in "${jars[@]}"; do
+  local_filepath=$(echo "$jar" | awk '{print $1}')
+  group_id=$(echo "$jar" | awk '{print $2}')
+  artifact_id=$(echo "$jar" | awk '{print $3}')
+  version=$(echo "$jar" | awk '{print $4}')
+
+  mvn deploy:deploy-file \
+    -Dfile="$local_filepath" \
+    -DgroupId="$group_id" \
+    -DartifactId="$artifact_id" \
+    -Dversion="$version" \
+    -Dpackaging="jar" \
+    -DgeneratePom=true \
+    -Durl="$mvn_repo" \
+    -DcreateChecksum=true
+done
+`
+
+	// Create a template object
+	tmpl, err := template.New("bashScript").Parse(bashScriptTemplate)
+	if err != nil {
+		return fmt.Errorf("error parsing template: %w", err)
 	}
 
-	writeStringsToFile(importCommands, "output/import-commands.sh")
+	// Create the output file
+	file, err := os.Create("output/import-commands.sh")
+	if err != nil {
+		return fmt.Errorf("error creating output file: %w", err)
+	}
+	defer file.Close()
+
+	// Execute the template with the report data
+	err = tmpl.Execute(file, struct {
+		Report  []ReportRow // Assuming your report data is in this struct
+		MvnRepo string
+	}{
+		Report:  report,
+		MvnRepo: mvnRepo,
+	})
+	if err != nil {
+		return fmt.Errorf("error executing template: %w", err)
+	}
 
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"unicode"
 )
 
+// Dependency represents a Maven dependency.
 func splitLines(s string) []string {
 	trimmedS := strings.TrimSpace(s)
 
@@ -26,7 +27,8 @@ func splitLines(s string) []string {
 
 	return strings.Split(trimmedS, delimiter)
 }
-
+// parseManifest parses a manifest file and returns a map of key-value pairs.
+// It returns an error if the manifest file is empty or if a line is invalid.
 func parseManifest(manifest string) (map[string]string, error) {
 	curr := make(map[string]string)
 
@@ -60,6 +62,8 @@ func parseManifest(manifest string) (map[string]string, error) {
 	return curr, nil
 }
 
+// extractJarManifest extracts the manifest file from a JAR file.
+// It returns the manifest file as a byte slice and an error if the file cannot be opened.
 func extractJarManifest(jarFilePath string, manifestPath string) ([]byte, error) {
 	jar, err := zip.OpenReader(jarFilePath)
 	if err != nil {
