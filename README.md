@@ -11,6 +11,8 @@
 - [x] Generate pom.xml dependency blocks with the dependencies found on Maven Central and those that need a custom repository
 - [x] Generate an mvn import command to migrate jar files into a custom Maven repository
 
+![How it works](assets/pomify-process.png)
+
 ## Installation
 
 To compile from source and install, after cloning the repository, run: `make`. If you prefer to just build, run `make build`.
