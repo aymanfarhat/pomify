@@ -1,6 +1,6 @@
 # Pomify
 
-> Classify, manage and migreate untracked jar file dependencies into a Maven project.
+> Classify, manage and migrate untracked jar file dependencies into a Maven project.
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
