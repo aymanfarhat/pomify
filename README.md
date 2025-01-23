@@ -13,6 +13,8 @@
 
 ![How it works](assets/pomify-process.png)
 
+More details on the approach and use case documented in ![this blog post](https://medium.com/google-cloud/taming-legacy-java-dependencies-with-pomify-and-google-cloud-artifact-registry-ad528be2da9e).
+
 ## Installation
 
 To compile from source and install, after cloning the repository, run: `make`. If you prefer to just build, run `make build`.
