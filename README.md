@@ -13,7 +13,7 @@
 
 ![How it works](assets/pomify-process.png)
 
-More details on the approach and use case documented in ![this blog post](https://medium.com/google-cloud/taming-legacy-java-dependencies-with-pomify-and-google-cloud-artifact-registry-ad528be2da9e).
+More details on the approach and use case documented in [this blog post](https://medium.com/google-cloud/taming-legacy-java-dependencies-with-pomify-and-google-cloud-artifact-registry-ad528be2da9e).
 
 ## Installation
 
